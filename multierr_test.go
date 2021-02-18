@@ -67,6 +67,12 @@ func Test_Titled(t *testing.T) {
 	})
 }
 
+func Test_Titledf(t *testing.T) {
+		err := errors.New("err")
+		err = Titledf(err, "formatted %s %d", "title", 42)
+		assert.Equal(t, "formatted title 42\n  - err", err.Error())
+}
+
 func Test_Append_appendSimpleError(t *testing.T) {
 	err := errors.New("err")
 	formatter := func([]error) string {

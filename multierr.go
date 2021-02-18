@@ -42,11 +42,10 @@ func (e *Error) ErrorOrNil() error {
 // If the error is not a multierr.Error, it will be converted.
 // Returns nil if if the error is nil.
 // This is equivalent of setting Error.Formatter directly.
-func Titled(err error, format string, args ...interface{}) *Error {
+func Titled(err error, title string) *Error {
 	if err == nil {
 		return nil
 	}
-	title := fmt.Sprintf(format, args...)
 	formatter := TitledListFormatter(title)
 
 	mErr, ok := err.(*Error)
@@ -59,6 +58,13 @@ func Titled(err error, format string, args ...interface{}) *Error {
 	mErr.Formatter = formatter
 
 	return mErr
+}
+
+// Titledf sets the error formatter to a TitledListFormatter.
+// See Titled for more information.
+func Titledf(err error, format string, args ...interface{}) *Error {
+	title := fmt.Sprintf(format, args...)
+	return Titled(err, title)
 }
 
 // Append combines all errors into a single multi-error.
