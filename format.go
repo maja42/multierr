@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-// FormatterFunc is called by Error.Error() to convert the
-//  multi-error into a human readable string.
+// FormatterFunc is called by Error.Error() to convert
+// multi-errors into a human readable strings.
 type FormatterFunc func([]error) string
 
 // ListFormatterFunc puts each sub-error in a new, indented line.

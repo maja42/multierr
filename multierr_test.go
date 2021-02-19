@@ -7,25 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestError_ErrorOrNil(t *testing.T) {
-	err := &Error{
-		Errors: []error{errors.New("err")},
-	}
-	assert.Equal(t, err, err.ErrorOrNil())
-
-	err = &Error{
-		Errors: []error{},
-	}
-	assert.Nil(t, err.ErrorOrNil())
-
-	err = &Error{}
-	assert.Nil(t, err.ErrorOrNil())
-
-	var typedErr *Error
-	//goland:noinspection GoNilness
-	assert.Nil(t, typedErr.ErrorOrNil())
-}
-
 func Test_Titled(t *testing.T) {
 	t.Run("simple error", func(t *testing.T) {
 		err := errors.New("err")
@@ -68,9 +49,9 @@ func Test_Titled(t *testing.T) {
 }
 
 func Test_Titledf(t *testing.T) {
-		err := errors.New("err")
-		err = Titledf(err, "formatted %s %d", "title", 42)
-		assert.Equal(t, "formatted title 42\n  - err", err.Error())
+	err := errors.New("err")
+	err = Titledf(err, "formatted %s %d", "title", 42)
+	assert.Equal(t, "formatted title 42\n  - err", err.Error())
 }
 
 func Test_Append_appendSimpleError(t *testing.T) {
@@ -232,4 +213,39 @@ func Test_Merge_mergeMultipleErrors(t *testing.T) {
 	multi := Merge(err, err, err)
 	result = Merge(nil, err, multi, nil, err, multi)
 	assert.Len(t, result.Errors, 8)
+}
+
+func TestInspect(t *testing.T) {
+
+	t.Run("simple error", func(t *testing.T) {
+		err := errors.New("err")
+		errs := Inspect(err)
+		assert.Equal(t, []error{err}, errs)
+	})
+
+	t.Run("multi error", func(t *testing.T) {
+		err := errors.New("err1")
+		multiErr := &Error{
+			Errors: []error{err, err},
+		}
+		errs := Inspect(multiErr)
+		assert.Equal(t, []error{err, err}, errs)
+	})
+
+	t.Run("nil error", func(t *testing.T) {
+		errs := Inspect(nil)
+		assert.Nil(t, errs)
+	})
+
+	t.Run("typed nil error", func(t *testing.T) {
+		var err *Error
+		errs := Inspect(err)
+		assert.Nil(t, errs)
+	})
+
+	t.Run("empty error", func(t *testing.T) {
+		errs := Inspect(&Error{})
+		assert.Nil(t, errs)
+	})
+
 }

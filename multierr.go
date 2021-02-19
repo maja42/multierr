@@ -25,17 +25,6 @@ func (e *Error) Error() string {
 	return formatter(e.Errors)
 }
 
-// ErrorOrNil returns an error interface if this Error represents
-// a list of errors, or returns nil if the list of errors is empty. This
-// function is useful at the end of accumulation to make sure that the value
-// returned represents the existence of errors.
-func (e *Error) ErrorOrNil() error {
-	if e == nil || len(e.Errors) == 0 {
-		return nil
-	}
-	return e
-}
-
 // Titled sets the error formatter to a TitledListFormatter.
 // The given title is used when calling Error.Error().
 //
@@ -117,4 +106,20 @@ func combine(flatten bool, err error, errs ...error) *Error {
 		return nil
 	}
 	return result
+}
+
+// Inspect returns all embedded sub-errors or nil if there are no errors.
+// If err is not a multi-error, an error-slice with one element is returned.
+func Inspect(err error) []error {
+	if err == nil {
+		return nil
+	}
+	result, ok := err.(*Error)
+	if !ok {
+		return []error{err}
+	}
+	if result == nil {
+		return nil
+	}
+	return result.Errors
 }
