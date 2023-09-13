@@ -117,7 +117,7 @@ func Test_TitledListFormatterFunc_multipleErrors(t *testing.T) {
 func Test_CustomFormatterFunc(t *testing.T) {
 	err := Append(nil,
 		errors.New("error 1"),
-		errors.New("error 2"))
+		errors.New("error 2")).(*Error)
 
 	err.Formatter = func(errs []error) string {
 		assert.Len(t, errs, 2)

@@ -29,15 +29,19 @@ func (e *Error) Error() string {
 // The given title is used when calling Error.Error().
 //
 // If the error is not a multierr.Error, it will be converted.
-// Returns nil if if the error is nil.
+// Returns nil if the error is nil. Otherwise, the result is always an *Error.
 // This is equivalent of setting Error.Formatter directly.
-func Titled(err error, title string) *Error {
+func Titled(err error, title string) error {
 	if err == nil {
 		return nil
 	}
 	formatter := TitledListFormatter(title)
 
 	mErr, ok := err.(*Error)
+	if mErr == nil && ok {
+		// typed nil-error
+		// special case: do not return nil. Return empty *Error that contains the custom title.
+	}
 	if mErr == nil {
 		mErr = &Error{}
 	}
@@ -51,32 +55,34 @@ func Titled(err error, title string) *Error {
 
 // Titledf sets the error formatter to a TitledListFormatter.
 // See Titled for more information.
-func Titledf(err error, format string, args ...interface{}) *Error {
+func Titledf(err error, format string, args ...interface{}) error {
 	title := fmt.Sprintf(format, args...)
 	return Titled(err, title)
 }
 
 // Append combines all errors into a single multi-error.
 // Any nil-error will be ignored. Returns nil if there are no errors.
+// A returned error will always be of type *Error.
 //
 // If err is a multierr.Error, it will be reused (the title and error-slice are kept).
 // Otherwise a new multierr.Error is created.
-func Append(err error, errs ...error) *Error {
+func Append(err error, errs ...error) error {
 	return combine(false, err, errs...)
 }
 
 // Merge combines all errors into a single multi-error.
 // Any nil-error will be ignored. Returns nil if there are no errors.
+// A returned error will always be of type *Error.
 //
 // If any errs is a multierr.Error, it will be flattened.
 //
 // If err is a multierr.Error, it will be reused (the title and error-slice are kept).
-// Otherwise a new multierr.Error is created.
-func Merge(err error, errs ...error) *Error {
+// Otherwise, a new multierr.Error is created.
+func Merge(err error, errs ...error) error {
 	return combine(true, err, errs...)
 }
 
-func combine(flatten bool, err error, errs ...error) *Error {
+func combine(flatten bool, err error, errs ...error) error {
 	result, ok := err.(*Error)
 	if result == nil {
 		result = &Error{
