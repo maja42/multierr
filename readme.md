@@ -67,6 +67,15 @@ Invalid input:
   - too young
 ```
 
+### Custom prefix
+
+Alternatively, you can prefix each error via `multierr.Prefixed(valErr, "Invalid input: ")` to get the following output:
+
+```
+Invalid input: missing name
+Invalid input: too young
+```
+
 ### Combining multiple multi-errors
 
 When validating nested structures, you often receive errors from sub-validators. 
@@ -175,7 +184,28 @@ invalid input:
 ```
 
 
-#### Option 4: `multiErr.Append(err, fmt.Errorf(...))`
+#### Option 4: `multierr.MergePrefixed(valErr, err)`
+
+In the above example, you do not see that city and street are subfields of the address.
+You can keep that information by using prefixes.
+Replace the address validation with this:
+```go
+valErr = multierr.MergePrefixed(valErr, "invalid adress: ", i.Address.Validate())
+```
+
+You will get the following:
+
+```
+invalid input:
+  - missing name
+  - too young
+  - invalid adress: missing city
+  - invalid adress: missing street
+```
+
+
+
+#### Option 5: `multiErr.Append(err, fmt.Errorf(...))`
 
 And, of course, calling `fmt.Errorf()` instead of `multierr.Append()` also yields great results.
 

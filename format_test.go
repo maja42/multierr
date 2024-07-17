@@ -114,6 +114,61 @@ func Test_TitledListFormatterFunc_multipleErrors(t *testing.T) {
 	assert.Equal(t, expected, err.Error())
 }
 
+func Test_PrefixedListFormatterFunc_noError(t *testing.T) {
+	DefaultFormatter = PrefixedListFormatter("prefix: ")
+
+	assert.Equal(t, "no errors occurred", (&Error{}).Error())
+
+	// Calling on a nil-error panics
+	var err *Error
+	assert.Panics(t, func() {
+		_ = err.Error()
+	})
+}
+
+func Test_PrefixedListFormatterFunc_singleError(t *testing.T) {
+	DefaultFormatter = PrefixedListFormatter("prefix: ")
+
+	err := Append(nil, errors.New("some error"))
+	expected := "prefix: some error"
+
+	assert.Equal(t, expected, err.Error())
+
+	// multiline-error:
+	err = Append(nil, errors.New("some error\nsecond line"))
+	expected = "" +
+		"prefix: some error\n" +
+		"        second line"
+
+	assert.Equal(t, expected, err.Error())
+}
+
+func Test_PrefixedListFormatterFunc_multipleErrors(t *testing.T) {
+	DefaultFormatter = PrefixedListFormatter("prefix: ")
+
+	err := Append(nil,
+		errors.New("error 1"),
+		errors.New("error 2"))
+
+	expected := "" +
+		"prefix: error 1\n" +
+		"prefix: error 2"
+
+	assert.Equal(t, expected, err.Error())
+
+	// multiline-errors:
+	err = Append(nil,
+		errors.New("error 1\nsecond line 1"),
+		errors.New("error 2\nsecond line 2"))
+	expected = "" +
+		"prefix: error 1\n" +
+		"        second line 1\n" +
+		"prefix: error 2\n" +
+		"        second line 2"
+
+	assert.Equal(t, expected, err.Error())
+}
+
 func Test_CustomFormatterFunc(t *testing.T) {
 	err := Append(nil,
 		errors.New("error 1"),
